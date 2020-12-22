@@ -28,6 +28,9 @@ func NewDBWith(portName aconfig.PortName, appConfig *aconfig.Application, driver
 		return nil, fmt.Errorf("missing matched primaryport location(%s)", portName)
 	}
 	options := appConfig.GetSecondaryPort(portName).Options
+	if options == nil {
+		return nil, fmt.Errorf("missing options for secondary port (%s)", portName)
+	}
 
 	return NewDB(driver, formatDNS(location, options), commonConfig)
 }

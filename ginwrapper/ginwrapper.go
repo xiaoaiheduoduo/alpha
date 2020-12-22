@@ -12,6 +12,7 @@ func New() *gin.Engine {
 	r.Use(GinResponseBodyLogMiddleware())
 	r.Use(Ginzap(alog.Logger, time.RFC3339, true))
 	r.Use(RecoveryWithZap(alog.Logger, true))
+	r.Use(Tracer())
 
 	return r
 }

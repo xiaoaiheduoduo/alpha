@@ -65,6 +65,9 @@ func New(configFile string) (*Application, error) {
 		return nil, err
 	}
 	err = yaml.Unmarshal(data, application)
+	if err != nil {
+		return nil, err
+	}
 
 	return application, nil
 }
