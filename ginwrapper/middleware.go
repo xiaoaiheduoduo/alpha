@@ -186,3 +186,17 @@ func Tracer() gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+func NoRoute() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		err := aerror.ErrNotFound().WithMessagef("resource not found: %v", c.Request.URL.Path)
+		c.JSON(err.HTTPStatusCode, err)
+	}
+}
+
+func NoMethod() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		err := aerror.ErrMethodNotAllowed().WithMessagef("method not allowed: %v", c.Request.Method)
+		c.JSON(err.HTTPStatusCode, err)
+	}
+}

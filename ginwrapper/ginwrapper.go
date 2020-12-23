@@ -14,5 +14,8 @@ func New() *gin.Engine {
 	r.Use(Ginzap(alog.Logger, time.RFC3339, true))
 	r.Use(RecoveryWithZap(alog.Logger, true))
 
+	r.NoRoute(NoRoute())
+	r.NoMethod(NoMethod())
+
 	return r
 }
