@@ -107,17 +107,17 @@ func logRequest(r *resty.Response, funcError error) {
 
 	// Success
 	if statusCode >= 200 && statusCode <= 299 {
-		logger.Info("httpclient: rpc",
+		logger.Info("httpclient rpc",
 			zap.Any("request", req),
 			zap.Any("response", resp),
 		)
 	} else if statusCode >= 500 || statusCode == 0 {
-		logger.Error("httpclient: rpc",
+		logger.Error("httpclient rpc",
 			zap.Any("request", req),
 			zap.Any("response", resp),
 		)
 	} else {
-		logger.Warn("httpclient: rpc",
+		logger.Warn("httpclient rpc",
 			zap.Any("request", req),
 			zap.Any("response", resp),
 		)

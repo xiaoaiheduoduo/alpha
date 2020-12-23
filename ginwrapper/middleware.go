@@ -4,19 +4,19 @@ import (
 	"bytes"
 	"io/ioutil"
 	"net"
-	"net/http"
 	"net/http/httputil"
 	"os"
 	"runtime/debug"
 	"strings"
 	"time"
 
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
+	"github.com/alphaframework/alpha/aerror"
 	"github.com/alphaframework/alpha/alog"
 	"github.com/alphaframework/alpha/autil"
 	"github.com/alphaframework/alpha/autil/ahttp"
 	"github.com/alphaframework/alpha/autil/ahttp/request"
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 const (
@@ -147,6 +147,7 @@ func RecoveryWithZap(logger *zap.Logger, stack bool) gin.HandlerFunc {
 					)
 					// If the connection is dead, we can't write a status to it.
 					c.Error(err.(error)) // nolint: errcheck
+					c.JSON(500, aerror.ErrInternalError().WithMessagef("internal error: %v", err))
 					c.Abort()
 					return
 				}
@@ -167,7 +168,8 @@ func RecoveryWithZap(logger *zap.Logger, stack bool) gin.HandlerFunc {
 						zap.String(alog.RequestIdKey, requestId),
 					)
 				}
-				c.AbortWithStatus(http.StatusInternalServerError)
+				c.JSON(500, aerror.ErrInternalError().WithMessagef("internal error: %v", err))
+				c.Abort()
 			}
 		}()
 		c.Next()
