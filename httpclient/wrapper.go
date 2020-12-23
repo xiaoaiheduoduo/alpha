@@ -3,6 +3,7 @@ package httpclient
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/alphaframework/alpha/aerror"
 	"net/http"
 
 	"github.com/go-resty/resty/v2"
@@ -107,6 +108,7 @@ func (rp *RespWrapper) Parse() (err error) {
 			err = fmt.Errorf("htttpclient: upstream[%d]: unmarshal body failed: %v", statusCode, err)
 			return
 		}
+		err = rp.checkIfValidAError(rp.error)
 		return
 	}
 
@@ -116,4 +118,14 @@ func (rp *RespWrapper) Parse() (err error) {
 	err = fmt.Errorf("htttpclient: upstream[%d]: unexpected status: %d", statusCode, statusCode)
 
 	return
+}
+
+func (rp *RespWrapper) checkIfValidAError(err interface{}) error {
+	if e, ok := err.(*aerror.Error); ok {
+		if e.Err.Code == "" {
+			return fmt.Errorf("invalid aerror response")
+		}
+	}
+
+	return nil
 }
