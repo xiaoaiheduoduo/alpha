@@ -182,7 +182,7 @@ func Tracer() gin.HandlerFunc {
 		if requestId == "" {
 			requestId = autil.GenerateUuid()
 		}
-
 		request.RequestIdToGin(c, requestId)
+		c.Next()
 	}
 }
