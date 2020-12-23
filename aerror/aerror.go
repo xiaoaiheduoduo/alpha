@@ -3,6 +3,7 @@ package aerror
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 )
 
 type Code string
@@ -29,80 +30,80 @@ const (
 	CodeServiceUnavailable    Code = "service_unavailable"
 )
 
-func ErrUnknown() *Error {
-	return New(CodeUnknown).WithHttpStatusCode(500)
+func ErrUnknown(messages ...string) *Error {
+	return New(CodeUnknown).WithHttpStatusCode(500).WithMessages(messages...)
 }
 
-func ErrUnauthorized() *Error {
-	return New(CodeUnauthorized).WithHttpStatusCode(401)
+func ErrUnauthorized(messages ...string) *Error {
+	return New(CodeUnauthorized).WithHttpStatusCode(401).WithMessages(messages...)
 }
 
-func ErrForbidden() *Error {
-	return New(CodeForbidden).WithHttpStatusCode(403)
+func ErrForbidden(messages ...string) *Error {
+	return New(CodeForbidden).WithHttpStatusCode(403).WithMessages(messages...)
 }
 
-func ErrNotFound() *Error {
-	return New(CodeNotFound).WithHttpStatusCode(404)
+func ErrNotFound(messages ...string) *Error {
+	return New(CodeNotFound).WithHttpStatusCode(404).WithMessages(messages...)
 }
 
-func ErrAlreadyExists() *Error {
-	return New(CodeAlreadyExists).WithHttpStatusCode(409)
+func ErrAlreadyExists(messages ...string) *Error {
+	return New(CodeAlreadyExists).WithHttpStatusCode(409).WithMessages(messages...)
 }
 
-func ErrConflict() *Error {
-	return New(CodeConflict).WithHttpStatusCode(409)
+func ErrConflict(messages ...string) *Error {
+	return New(CodeConflict).WithHttpStatusCode(409).WithMessages(messages...)
 }
 
-func ErrGone() *Error {
-	return New(CodeGone).WithHttpStatusCode(410)
+func ErrGone(messages ...string) *Error {
+	return New(CodeGone).WithHttpStatusCode(410).WithMessages(messages...)
 }
 
-func ErrInvalid() *Error {
-	return New(CodeInvalid).WithHttpStatusCode(422)
+func ErrInvalid(messages ...string) *Error {
+	return New(CodeInvalid).WithHttpStatusCode(422).WithMessages(messages...)
 }
 
-func ErrServerTimeout() *Error {
-	return New(CodeServerTimeout).WithHttpStatusCode(500)
+func ErrServerTimeout(messages ...string) *Error {
+	return New(CodeServerTimeout).WithHttpStatusCode(500).WithMessages(messages...)
 }
 
-func ErrTimeout() *Error {
-	return New(CodeTimeout).WithHttpStatusCode(504)
+func ErrTimeout(messages ...string) *Error {
+	return New(CodeTimeout).WithHttpStatusCode(504).WithMessages(messages...)
 }
 
-func ErrTooManyRequests() *Error {
-	return New(CodeTooManyRequests).WithHttpStatusCode(429)
+func ErrTooManyRequests(messages ...string) *Error {
+	return New(CodeTooManyRequests).WithHttpStatusCode(429).WithMessages(messages...)
 }
 
-func ErrBadRequest() *Error {
-	return New(CodeBadRequest).WithHttpStatusCode(400)
+func ErrBadRequest(messages ...string) *Error {
+	return New(CodeBadRequest).WithHttpStatusCode(400).WithMessages(messages...)
 }
 
-func ErrMethodNotAllowed() *Error {
-	return New(CodeMethodNotAllowed).WithHttpStatusCode(405)
+func ErrMethodNotAllowed(messages ...string) *Error {
+	return New(CodeMethodNotAllowed).WithHttpStatusCode(405).WithMessages(messages...)
 }
 
-func ErrNotAcceptable() *Error {
-	return New(CodeNotAcceptable).WithHttpStatusCode(406)
+func ErrNotAcceptable(messages ...string) *Error {
+	return New(CodeNotAcceptable).WithHttpStatusCode(406).WithMessages(messages...)
 }
 
-func ErrRequestEntityTooLarge() *Error {
-	return New(CodeRequestEntityTooLarge).WithHttpStatusCode(413)
+func ErrRequestEntityTooLarge(messages ...string) *Error {
+	return New(CodeRequestEntityTooLarge).WithHttpStatusCode(413).WithMessages(messages...)
 }
 
-func ErrUnsupportedMediaType() *Error {
-	return New(CodeUnsupportedMediaType).WithHttpStatusCode(415)
+func ErrUnsupportedMediaType(messages ...string) *Error {
+	return New(CodeUnsupportedMediaType).WithHttpStatusCode(415).WithMessages(messages...)
 }
 
-func ErrInternalError() *Error {
-	return New(CodeInternalError).WithHttpStatusCode(500)
+func ErrInternalError(messages ...string) *Error {
+	return New(CodeInternalError).WithHttpStatusCode(500).WithMessages(messages...)
 }
 
-func ErrExpired() *Error {
-	return New(CodeExpired).WithHttpStatusCode(410)
+func ErrExpired(messages ...string) *Error {
+	return New(CodeExpired).WithHttpStatusCode(410).WithMessages(messages...)
 }
 
-func ErrServiceUnavailable() *Error {
-	return New(CodeServiceUnavailable).WithHttpStatusCode(503)
+func ErrServiceUnavailable(messages ...string) *Error {
+	return New(CodeServiceUnavailable).WithHttpStatusCode(503).WithMessages(messages...)
 }
 
 type Details map[string]interface{}
@@ -156,6 +157,13 @@ func (ae *Error) Error() string {
 
 func (ae *Error) WithMessage(message string) *Error {
 	ae.Err.Message = message
+
+	return ae
+}
+func (ae *Error) WithMessages(messages ...string) *Error {
+	if len(messages) > 0 {
+		ae.Err.Message = strings.Join(messages, " | ")
+	}
 
 	return ae
 }
