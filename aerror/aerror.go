@@ -162,7 +162,7 @@ func (ae *Error) WithMessage(message string) *Error {
 }
 func (ae *Error) WithMessages(messages ...string) *Error {
 	if len(messages) > 0 {
-		ae.Err.Message = strings.Join(messages, " | ")
+		ae.Err.Message = strings.Join(messages, ";")
 	}
 
 	return ae
