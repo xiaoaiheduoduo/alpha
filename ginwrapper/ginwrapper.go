@@ -17,5 +17,17 @@ func New() *gin.Engine {
 	r.NoRoute(NoRoute())
 	r.NoMethod(NoMethod())
 
+	addHealthEndpoints(r)
+
 	return r
+}
+
+func addHealthEndpoints(r *gin.Engine) {
+	// For health checking
+	r.GET("/livez", func(c *gin.Context) {
+		c.String(200, "")
+	})
+	r.GET("/readyz", func(c *gin.Context) {
+		c.String(200, "")
+	})
 }
