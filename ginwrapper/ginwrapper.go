@@ -8,7 +8,8 @@ import (
 )
 
 func defaultHealthHandler(c *gin.Context) {
-	c.String(200, "")
+	c.Header("Content-type", "application/json; charset=utf-8")
+	c.String(200, `{"status": 200, "message": "success"}`)
 }
 
 type Options struct {
