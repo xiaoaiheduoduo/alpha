@@ -6,11 +6,11 @@ import (
 	"net/http"
 	"runtime/debug"
 
-	"go.uber.org/zap"
-	"github.com/go-resty/resty/v2"
 	"github.com/alphaframework/alpha/alog"
 	"github.com/alphaframework/alpha/autil"
 	"github.com/alphaframework/alpha/autil/ahttp"
+	"github.com/go-resty/resty/v2"
+	"go.uber.org/zap"
 )
 
 const (
@@ -55,11 +55,15 @@ func logRequestMiddleware() func(c *resty.Client, r *resty.Response) error {
 }
 
 func logRequest(r *resty.Response, funcError error) {
-	var logger *zap.Logger
+	logger := alog.Logger
+	if r == nil {
+		logger.Warn("httpclient: Response is nil",
+			zap.Any("error", funcError),
+		)
+		return
+	}
 	if r.Request != nil {
 		logger = alog.Ctx(r.Request.Context())
-	} else {
-		logger = alog.Logger
 	}
 
 	defer func() {
