@@ -59,7 +59,6 @@ func logRequest(r *resty.Response, funcError error) {
 	if r == nil {
 		logger.Warn("httpclient: Response is nil",
 			zap.Any("error", funcError),
-			zap.Any("stack", string(debug.Stack())),
 		)
 		return
 	}
