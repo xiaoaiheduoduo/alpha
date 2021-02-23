@@ -2,16 +2,20 @@ package httpclient
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
-	"github.com/go-resty/resty/v2"
-	"go.uber.org/zap"
 	"github.com/alphaframework/alpha/aconfig"
 	"github.com/alphaframework/alpha/alog"
+	"github.com/go-resty/resty/v2"
+	"go.uber.org/zap"
 )
 
 const (
 	defaultTimeout = 10 * time.Second
+
+	httpProtocol  = "http://"
+	httpsProtocol = "https://"
 )
 
 func NewResty(sugar *zap.SugaredLogger) *resty.Client {
@@ -32,6 +36,12 @@ func NewRestyWith(portName aconfig.PortName, appConfig *aconfig.Application, pro
 	}
 
 	client := NewResty(alog.Sugar)
+	switch {
+	case strings.HasPrefix(location.Address, httpProtocol):
+		location.Address = location.Address[len(httpProtocol):]
+	case strings.HasPrefix(location.Address, httpsProtocol):
+		location.Address = location.Address[len(httpsProtocol):]
+	}
 	hostURL := fmt.Sprintf("%s%s:%d", protocol, location.Address, location.Port)
 	client.SetHostURL(hostURL)
 
