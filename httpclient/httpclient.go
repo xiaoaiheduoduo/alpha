@@ -13,9 +13,6 @@ import (
 
 const (
 	defaultTimeout = 10 * time.Second
-
-	httpProtocol  = "http://"
-	httpsProtocol = "https://"
 )
 
 func NewResty(sugar *zap.SugaredLogger) *resty.Client {
@@ -36,13 +33,10 @@ func NewRestyWith(portName aconfig.PortName, appConfig *aconfig.Application, pro
 	}
 
 	client := NewResty(alog.Sugar)
-	switch {
-	case strings.HasPrefix(location.Address, httpProtocol):
-		location.Address = location.Address[len(httpProtocol):]
-	case strings.HasPrefix(location.Address, httpsProtocol):
-		location.Address = location.Address[len(httpsProtocol):]
-	}
-	hostURL := fmt.Sprintf("%s%s:%d", protocol, location.Address, location.Port)
+	// Eliminat the interference of protocol in address
+	address := strings.TrimPrefix(location.Address, "http://")
+	address = strings.TrimPrefix(address, "https://")
+	hostURL := fmt.Sprintf("%s%s:%d", protocol, address, location.Port)
 	client.SetHostURL(hostURL)
 
 	return client, nil
