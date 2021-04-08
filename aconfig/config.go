@@ -58,11 +58,19 @@ type Application struct {
 	Spec       ApplicationSpec `json:"spec,omitempty"`
 }
 
-func New(configFile string) (*Application, error) {
+type PreProcessFunc func([]byte) ([]byte, error)
+
+func New(configFile string, funcs ...PreProcessFunc) (*Application, error) {
 	var application = &Application{}
 	data, err := ioutil.ReadFile(configFile)
 	if err != nil {
 		return nil, err
+	}
+	// Run the funcs on it
+	for _, f := range funcs {
+		if data, err = f(data); err != nil {
+			return nil, err
+		}
 	}
 	err = yaml.Unmarshal(data, application)
 	if err != nil {

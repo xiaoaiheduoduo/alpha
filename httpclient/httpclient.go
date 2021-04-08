@@ -2,12 +2,13 @@ package httpclient
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
-	"github.com/go-resty/resty/v2"
-	"go.uber.org/zap"
 	"github.com/alphaframework/alpha/aconfig"
 	"github.com/alphaframework/alpha/alog"
+	"github.com/go-resty/resty/v2"
+	"go.uber.org/zap"
 )
 
 const (
@@ -32,7 +33,10 @@ func NewRestyWith(portName aconfig.PortName, appConfig *aconfig.Application, pro
 	}
 
 	client := NewResty(alog.Sugar)
-	hostURL := fmt.Sprintf("%s%s:%d", protocol, location.Address, location.Port)
+	// Eliminat the interference of protocol in address
+	address := strings.TrimPrefix(location.Address, "http://")
+	address = strings.TrimPrefix(address, "https://")
+	hostURL := fmt.Sprintf("%s%s:%d", protocol, address, location.Port)
 	client.SetHostURL(hostURL)
 
 	return client, nil

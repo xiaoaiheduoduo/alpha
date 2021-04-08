@@ -12,8 +12,9 @@ const (
 )
 
 type Common struct {
-	Log      Log      `json:"log,omitempty"`
-	Database Database `json:"database,omitempty"`
+	Log       Log       `json:"log,omitempty"`
+	Database  Database  `json:"database,omitempty"`
+	Encryptor Encryptor `json:"encryptor,omitempty"`
 }
 
 func (c *Common) Complete() {
@@ -59,4 +60,8 @@ func (db *Database) complete() {
 	if db.SlowThresholdMilliseconds == 0 {
 		db.SlowThresholdMilliseconds = defaultSlowThresholdMilliseconds
 	}
+}
+
+type Encryptor struct {
+	S string `json:"s,omitempty"`
 }
