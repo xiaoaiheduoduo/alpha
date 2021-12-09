@@ -3,8 +3,8 @@ package ginwrapper
 import (
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/alphaframework/alpha/alog"
+	"github.com/gin-gonic/gin"
 )
 
 func defaultHealthHandler(c *gin.Context) {
@@ -17,6 +17,8 @@ type Options struct {
 	LivezHandler func(c *gin.Context)
 	// ReadyzHandler checks if the app is ready for incoming requests
 	ReadyzHandler func(c *gin.Context)
+	// ConfigzHandler checks if the app's config is working
+	ConfigzHandler func(c *gin.Context)
 }
 
 func (o *Options) complete() {
@@ -25,6 +27,9 @@ func (o *Options) complete() {
 	}
 	if o.ReadyzHandler == nil {
 		o.ReadyzHandler = defaultHealthHandler
+	}
+	if o.ConfigzHandler == nil {
+		o.ConfigzHandler = defaultHealthHandler
 	}
 }
 
@@ -51,4 +56,5 @@ func New(options *Options) *gin.Engine {
 func addHealthEndpoints(r *gin.Engine, options *Options) {
 	r.GET("/livez", options.LivezHandler)
 	r.GET("/readyz", options.ReadyzHandler)
+	r.GET("/configz", options.ConfigzHandler)
 }
