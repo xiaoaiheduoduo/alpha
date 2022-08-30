@@ -38,6 +38,7 @@ func TestNewFile(t *testing.T) {
 	l := &Logger{
 		Filename: logFile(dir),
 	}
+	l.Complete()
 	defer l.Close()
 	b := []byte("boo!")
 	n, err := l.Write(b)
@@ -61,6 +62,7 @@ func TestOpenExisting(t *testing.T) {
 	l := &Logger{
 		Filename: filename,
 	}
+	l.Complete()
 	defer l.Close()
 	b := []byte("boo!")
 	n, err := l.Write(b)
@@ -83,6 +85,7 @@ func TestWriteTooLong(t *testing.T) {
 		Filename: logFile(dir),
 		MaxSize:  5,
 	}
+	l.Complete()
 	defer l.Close()
 	b := []byte("booooooooooooooo!")
 	n, err := l.Write(b)
@@ -103,6 +106,7 @@ func TestMakeLogDir(t *testing.T) {
 	l := &Logger{
 		Filename: filename,
 	}
+	l.Complete()
 	defer l.Close()
 	b := []byte("boo!")
 	n, err := l.Write(b)
@@ -139,6 +143,7 @@ func TestAutoRotate(t *testing.T) {
 		Filename: filename,
 		MaxSize:  10,
 	}
+	l.Complete()
 	defer l.Close()
 	b := []byte("boo!")
 	n, err := l.Write(b)
@@ -176,6 +181,7 @@ func TestFirstWriteRotate(t *testing.T) {
 		Filename: filename,
 		MaxSize:  10,
 	}
+	l.Complete()
 	defer l.Close()
 
 	start := []byte("boooooo!")
@@ -208,6 +214,7 @@ func TestMaxBackups(t *testing.T) {
 		MaxSize:    10,
 		MaxBackups: 1,
 	}
+	l.Complete()
 	defer l.Close()
 	b := []byte("boo!")
 	n, err := l.Write(b)
@@ -282,18 +289,18 @@ func TestMaxBackups(t *testing.T) {
 	// this will use the new fake time
 	fourthFilename := backupFile(dir)
 
+	// this will make us rotate again
+	b4 := []byte("baaaaaaz!")
+	n, err = l.Write(b4)
+	isNil(err, t)
+	equals(len(b4), n, t)
+
 	// Create a log file that is/was being compressed - this should
 	// not be counted since both the compressed and the uncompressed
 	// log files still exist.
 	compLogFile := fourthFilename + compressSuffix
 	err = ioutil.WriteFile(compLogFile, []byte("compress"), 0644)
 	isNil(err, t)
-
-	// this will make us rotate again
-	b4 := []byte("baaaaaaz!")
-	n, err = l.Write(b4)
-	isNil(err, t)
-	equals(len(b4), n, t)
 
 	existsWithContent(fourthFilename, b3, t)
 	existsWithContent(fourthFilename+compressSuffix, []byte("compress"), t)
@@ -360,6 +367,7 @@ func TestCleanupExistingBackups(t *testing.T) {
 		MaxSize:    10,
 		MaxBackups: 1,
 	}
+	l.Complete()
 	defer l.Close()
 
 	newFakeTime()
@@ -390,6 +398,7 @@ func TestMaxAge(t *testing.T) {
 		MaxSize:  10,
 		MaxAge:   1,
 	}
+	l.Complete()
 	defer l.Close()
 	b := []byte("boo!")
 	n, err := l.Write(b)
@@ -475,6 +484,7 @@ func TestOldLogFiles(t *testing.T) {
 	isNil(err, t)
 
 	l := &Logger{Filename: filename}
+	l.Complete()
 	files, err := l.oldLogFiles()
 	isNil(err, t)
 	equals(2, len(files), t)
@@ -486,6 +496,7 @@ func TestOldLogFiles(t *testing.T) {
 
 func TestTimeFromName(t *testing.T) {
 	l := &Logger{Filename: "/var/log/myfoo/foo.log"}
+	l.Complete()
 	prefix, ext := l.prefixAndExt()
 
 	tests := []struct {
@@ -493,14 +504,14 @@ func TestTimeFromName(t *testing.T) {
 		want     time.Time
 		wantErr  bool
 	}{
-		{"foo-2014-05-04T14-44-33.555.log", time.Date(2014, 5, 4, 14, 44, 33, 555000000, time.UTC), false},
-		{"foo-2014-05-04T14-44-33.555", time.Time{}, true},
+		{"foo.2014-05-04T14-44-33.555.0.log", time.Date(2014, 5, 4, 14, 44, 33, 555000000, time.UTC), false},
+		{"foo.2014-05-04T14-44-33.555", time.Time{}, true},
 		{"2014-05-04T14-44-33.555.log", time.Time{}, true},
 		{"foo.log", time.Time{}, true},
 	}
 
 	for _, test := range tests {
-		got, err := l.timeFromName(test.filename, prefix, ext)
+		got, _, err := l.timeFromName(test.filename, prefix, ext)
 		equals(got, test.want, t)
 		equals(err != nil, test.wantErr, t)
 	}
@@ -518,6 +529,7 @@ func TestLocalTime(t *testing.T) {
 		MaxSize:   10,
 		LocalTime: true,
 	}
+	l.Complete()
 	defer l.Close()
 	b := []byte("boo!")
 	n, err := l.Write(b)
@@ -545,6 +557,7 @@ func TestRotate(t *testing.T) {
 		MaxBackups: 1,
 		MaxSize:    100, // megabytes
 	}
+	l.Complete()
 	defer l.Close()
 	b := []byte("boo!")
 	n, err := l.Write(b)
@@ -603,6 +616,7 @@ func TestCompressOnRotate(t *testing.T) {
 		Filename: filename,
 		MaxSize:  10,
 	}
+	l.Complete()
 	defer l.Close()
 	b := []byte("boo!")
 	n, err := l.Write(b)
@@ -652,6 +666,7 @@ func TestCompressOnResume(t *testing.T) {
 		Filename: filename,
 		MaxSize:  10,
 	}
+	l.Complete()
 	defer l.Close()
 
 	// Create a backup file and empty "compressed" file.
@@ -779,11 +794,11 @@ func logFile(dir string) string {
 }
 
 func backupFile(dir string) string {
-	return filepath.Join(dir, "foobar-"+fakeTime().UTC().Format(backupTimeFormat)+".log")
+	return filepath.Join(dir, "foobar."+fakeTime().UTC().Format(backupTimeFormat)+".1.log")
 }
 
 func backupFileLocal(dir string) string {
-	return filepath.Join(dir, "foobar-"+fakeTime().Format(backupTimeFormat)+".log")
+	return filepath.Join(dir, "foobar."+fakeTime().Format(backupTimeFormat)+".1.log")
 }
 
 // logFileLocal returns the log file name in the given directory for the current
