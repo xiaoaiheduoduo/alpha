@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/alphaframework/alpha/autil"
-	"github.com/alphaframework/alpha/autil/ahttp/request"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"gopkg.in/natefinch/lumberjack.v2"
+
+	"github.com/alphaframework/alpha/autil"
+	"github.com/alphaframework/alpha/autil/ahttp/request"
+	"github.com/alphaframework/alpha/forked/lumberjack"
 )
 
 const (
@@ -23,45 +24,71 @@ var (
 	Sugar  *zap.SugaredLogger
 )
 
+type Config struct {
+	ApplicationName  string
+	Directory        string
+	Level            string
+	Format           string
+	MaxSize          int // MB
+	MaxAge           int // day
+	MaxBackups       int
+	Compress         bool
+	BackupTimeFormat string
+}
+
 // InitLogger init Logger and Sugar
 // applicationName
 // directory: log directory
 // level: log level (debug/info/warn/error/panic/fatal)
 // format: log format (console/json)
-func InitLogger(applicationName, directory, level, format string) error {
-	if applicationName == "" {
-		return fmt.Errorf("applicationName is required")
-	}
+func InitLogger(config *Config) error {
 	formatList := []string{"", "console", "json"}
-	if !autil.In(format, formatList) {
-		return fmt.Errorf("log format: %s does not validate as in %#v", format, formatList)
+	if !autil.In(config.Format, formatList) {
+		return fmt.Errorf("log format: %s does not validate as in %#v", config.Format, formatList)
 	}
 
-	if directory == "" {
+	if config.Directory == "" {
 		return fmt.Errorf("directory is required")
 	}
 
-	if level == "" {
-		level = defaultLogLevel
+	if config.Level == "" {
+		config.Level = defaultLogLevel
 	}
-	if format == "" {
-		format = defaultLogFormat
+	if config.Format == "" {
+		config.Format = defaultLogFormat
 	}
 
+	// todo check backup time format
+	// if config.BackupTimeFormat != "" {
+	// 	backupTimeFormat := time.Date(2006, 01, 02, 15, 04, 05, 0, time.UTC).Format(config.BackupTimeFormat)
+	// 	if config.BackupTimeFormat != backupTimeFormat {
+	// 		return fmt.Errorf("log/backup_time_format %q not valid", config.BackupTimeFormat)
+	// 	}
+	// }
+
 	var l zapcore.Level
-	if err := l.Set(level); err != nil {
+	if err := l.Set(config.Level); err != nil {
 		return err
 	}
 
 	getWriter := func(level string) *lumberjack.Logger {
-		logPath := directory + "/" + applicationName + "." + level + ".log"
-		return &lumberjack.Logger{
-			Filename:   logPath,
-			MaxSize:    512, // MB
-			MaxAge:     240, // day
-			MaxBackups: 100,
-			Compress:   true,
+		var logPath string
+		if config.ApplicationName == "" {
+			logPath = config.Directory + "/" + level + ".log"
+		} else {
+			logPath = config.Directory + "/" + config.ApplicationName + "." + level + ".log"
+
 		}
+		logger := &lumberjack.Logger{
+			Filename:         logPath,
+			MaxSize:          config.MaxSize, // MB
+			MaxAge:           config.MaxAge,  // day
+			MaxBackups:       config.MaxBackups,
+			Compress:         config.Compress,
+			BackupTimeFormat: config.BackupTimeFormat,
+		}
+		logger.Complete()
+		return logger
 	}
 
 	encoderConfig := zapcore.EncoderConfig{
@@ -80,7 +107,7 @@ func InitLogger(applicationName, directory, level, format string) error {
 	}
 
 	encoder := zapcore.NewConsoleEncoder(encoderConfig)
-	if format == "json" {
+	if config.Format == "json" {
 		encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 		encoderConfig.EncodeLevel = zapcore.LowercaseLevelEncoder
 		encoder = zapcore.NewJSONEncoder(encoderConfig)
@@ -101,8 +128,12 @@ func InitLogger(applicationName, directory, level, format string) error {
 	caller := zap.AddCaller()
 	development := zap.Development()
 
-	field := zap.Fields(zap.String("application_name", applicationName))
-	Logger = zap.New(core, caller, development, field)
+	Logger = zap.New(core, caller, development)
+
+	if config.ApplicationName != "" {
+		field := zap.Fields(zap.String("application_name", config.ApplicationName))
+		Logger.WithOptions(field)
+	}
 
 	Logger.Info(`log.InitLogger successfully`)
 

@@ -3,8 +3,13 @@ package aconfig
 import "strings"
 
 const (
-	defaultLogLevel     = "info"
-	defaultLogDirectory = "/data/log"
+	defaultLogLevel            = "info"
+	defaultLogDirectory        = "/data/log"
+	defaultLogMaxSize          = 512 // MB
+	defaultLogMaxAge           = 240 // day
+	defaultLogMaxBackups       = 100
+	defaultLogCompress         = true
+	defaultLogBackupTimeFormat = "20060102"
 
 	defaultTmpDirectory     = "/data/tmp"
 	defaultPrivateDirectory = "/data/private"
@@ -54,9 +59,14 @@ func (v *Var) GetPrivateDirectory() string {
 }
 
 type Log struct {
-	Level     string `json:"level,omitempty"`
-	Directory string `json:"directory,omitempty"`
-	Format    string `json:"format,omitempty"`
+	Level            string `json:"level,omitempty"`
+	Directory        string `json:"directory,omitempty"`
+	Format           string `json:"format,omitempty"`
+	MaxSize          *int   `json:"max_size,omitempty"`
+	MaxAge           *int   `json:"max_age,omitempty"`
+	MaxBackups       *int   `json:"max_backups,omitempty"`
+	Compress         *bool  `json:"compress,omitempty"`
+	BackupTimeFormat string `json:"backup_time_format,omitempty"`
 }
 
 func (l *Log) complete(applicationName string) {
@@ -67,6 +77,26 @@ func (l *Log) complete(applicationName string) {
 		l.Directory = defaultLogDirectory
 	}
 	l.Directory = joinPath(l.Directory, applicationName)
+
+	if l.MaxSize == nil {
+		maxSize := defaultLogMaxSize
+		l.MaxSize = &maxSize
+	}
+	if l.MaxAge == nil {
+		maxAge := defaultLogMaxAge
+		l.MaxAge = &maxAge
+	}
+	if l.MaxBackups == nil {
+		maxBackups := defaultLogMaxBackups
+		l.MaxBackups = &maxBackups
+	}
+	if l.Compress == nil {
+		compress := true
+		l.Compress = &compress
+	}
+	if l.BackupTimeFormat == "" {
+		l.BackupTimeFormat = defaultLogBackupTimeFormat
+	}
 }
 
 func joinPath(path1, path2 string) string {

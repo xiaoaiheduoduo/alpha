@@ -154,7 +154,6 @@ func RecoveryWithZap(logger *zap.Logger, stack bool) gin.HandlerFunc {
 				}
 
 				if stack {
-					// logger.Error("[Recovery from panic]",
 					logger.Error("[Recovery from panic]"+string(debug.Stack()),
 						zap.Time("time", time.Now()),
 						zap.Any("error", err),
